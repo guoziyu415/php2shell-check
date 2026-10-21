@@ -208,7 +208,7 @@ body.rec textarea{height:400px}
 
   var ST = {
     fixed: { level: 0, ja: "修正済み", en: "Fixed" },
-    pull: { level: 1, ja: "取り直しが必要", en: "Pull and rebuild" },
+    pull: { level: 1, ja: "イメージの更新を確認", en: "Check the image" },
     vendor: { level: 2, ja: "ディストリの対応を確認", en: "Check your vendor" },
     unknownpatch: { level: 2, ja: "パッチ番号を確認", en: "Check the exact version" },
     vulnerable: { level: 3, ja: "要アップデート", en: "Update now" },
@@ -388,7 +388,8 @@ body.rec textarea{height:400px}
       case "pull":
         if (f.imageKind === "app") { L.push(ja ? "このイメージは中の PHP " + j.branch + " を公式イメージから引き継ぎます。修正版の PHP で作り直されたものを pull してコンテナを入れ替え、中で php -v を実行して " + j.target + " 以上か確かめてください。" : "This image inherits PHP " + j.branch + " from its base. Pull the rebuilt image, replace the containers, and run php -v inside to confirm " + j.target + " or newer."); break; }
         if (f.sapi === "ci") { L.push(ja ? "CI は実行のたびに最新の " + j.branch + " を入れることが多いので、ログの php -v が " + j.target + " 以上か見てください。" : "CI usually installs the latest " + j.branch + " on each run. Check that php -v in the log shows " + j.target + " or newer."); break; }
-        L.push(ja ? "このタグは修正版 " + j.target + " に更新されました。ただし手元のイメージと動いているコンテナは古いままなので、pull して再ビルドし、コンテナを入れ替えてください。Docker Hub への反映に時間がかかることもあるので、最後に中で php -v を確かめると確実です。" : "This tag has moved to the fixed " + j.target + ". Your cached image and running containers are still old, so pull, rebuild and replace the containers, then run php -v inside to confirm. Docker Hub can take a while to catch up.");
+        var pin = r.fix ? String(r.fix).split(/\s+/).pop() : "";
+        L.push(ja ? "公式イメージの定義は修正版 " + j.target + " に更新されましたが、Docker Hub への配信は順次です。pull した後、コンテナの中で php -v を実行して " + j.target + " 以上か確かめてください。まだ古ければ配信を待つ必要があります。" + (pin ? pin + " のように" : "") + "版まで固定したタグにすると、配信前は pull が失敗し、配信後は必ず修正版が入るので確実です。" : "The official image definition moved to the fixed " + j.target + ", but Docker Hub is rolling the builds out gradually. After pulling, run php -v inside the container and make sure it shows " + j.target + " or newer. If it is still old, wait for the push. Pinning the exact tag" + (pin ? ", " + pin + "," : "") + " makes this safe: it fails to pull until the fixed build is out, and always gets the fixed build after that.");
         break;
       case "vendor":
         L.push(ja ? "ディストリのパッケージです（" + f.v.distro + "）。ディストリには事前にパッチが渡っているので、OS の更新を確認して入れ、" + (f.sapi === "modphp" ? "Apache" : f.sapi === "fpm" ? "php-fpm" : "Web サーバー") + " を再起動してください。番号の見方はディストリのセキュリティ情報で確認できます。" : "This is a distribution package (" + f.v.distro + "). Vendors received the patches in advance, so install the OS update, restart " + (f.sapi === "modphp" ? "Apache" : f.sapi === "fpm" ? "php-fpm" : "the web server") + ", and confirm the fixed package version in your vendor's security tracker.");
@@ -437,11 +438,11 @@ var T = {
     samples: { docker: "Dockerfile", compose: "docker-compose", phpv: "php -v", list: "サーバー一覧", dpkg: "パッケージ一覧" },
     ph: "ここに Dockerfile や php -v の結果を貼ってください",
     none: "まだ何もありません。左に貼るか、サンプルを押してください。", nothing: "PHP の版が見つかりませんでした。php -v の結果や FROM php: の行を貼ってみてください。",
-    sum: ["すべて修正済み", "取り直せば直る", "要確認", "要アップデート", "サポート終了あり"], sumP: "{n} 件見つかりました", line: "{n} 行目",
+    sum: ["すべて修正済み", "イメージの更新を確認", "要確認", "要アップデート", "サポート終了あり"], sumP: "{n} 件見つかりました", line: "{n} 行目",
     k1: "Fixed versions", t1: "修正版と対象", t2: "今すぐやること",
     tbl: [["8.5", "8.5.12"], ["8.4", "8.4.27"], ["8.3", "8.3.36"], ["8.2", "8.2.35  2026年末でサポート終了"], ["8.1・8.0・7.4", "公式の修正版なし。ソースへの最小限のバックポートのみ"], ["7.3 以前", "修正なし"]],
     thv: "系列", thf: "修正版",
-    todo: ["インターネットに面したサーバーから先に更新する", "コンテナは pull して再ビルドし、動いているものを入れ替える", "パッケージを更新したら php-fpm や Apache を再起動する", "すぐ直せないサーバーはネットから切り離す", "PHP のプロセスが sh や curl を起動していないか見張る", "Cloudflare 経由なら WAF ルールが一時しのぎになる。ただし更新の代わりにはならない"],
+    todo: ["インターネットに面したサーバーから先に更新する", "コンテナは版を固定したタグで pull して再ビルドし、入れ替えたら中で php -v を確かめる", "パッケージを更新したら php-fpm や Apache を再起動する", "すぐ直せないサーバーはネットから切り離す", "PHP のプロセスが sh や curl を起動していないか見張る", "Cloudflare 経由なら WAF ルールが一時しのぎになる。ただし更新の代わりにはならない"],
     k2: "What happened", t3: "何が起きたか",
     tl: [["10月20日", "Hacker News の投稿で、公開前の2件の脆弱性が漏れる"], ["10月20日", "PHP が予告を出し、公開を1日前倒し"], ["10月21日", "23時 JST に 8.5.12、8.4.27、8.3.36、8.2.35 を公開"], ["対象", "Web リクエストを処理するすべての PHP。PHP-FPM、mod_php、php-cgi、FrankenPHP、LiteSpeed"]],
     q: "Wiz の研究者は、何十年も前からあった欠陥を実際の攻撃に使えるようにするまでの壁を、フロンティア AI モデルが大きく下げたと述べています。Help Net Security より。",
@@ -457,11 +458,11 @@ var T = {
     samples: { docker: "Dockerfile", compose: "docker-compose", phpv: "php -v", list: "Server list", dpkg: "Package list" },
     ph: "Paste a Dockerfile or the output of php -v here",
     none: "Nothing yet. Paste on the left or press a sample.", nothing: "No PHP version found. Try the output of php -v or a FROM php: line.",
-    sum: ["All fixed", "Fixed after a rebuild", "Needs a check", "Update now", "End of life found"], sumP: "{n} found", line: "line {n}",
+    sum: ["All fixed", "Check your images", "Needs a check", "Update now", "End of life found"], sumP: "{n} found", line: "line {n}",
     k1: "Fixed versions", t1: "Fixed versions and scope", t2: "Do this now",
     tbl: [["8.5", "8.5.12"], ["8.4", "8.4.27"], ["8.3", "8.3.36"], ["8.2", "8.2.35  end of life at the end of 2026"], ["8.1, 8.0, 7.4", "No official release. Minimal source backports only"], ["7.3 and older", "No fix"]],
     thv: "Branch", thf: "Fixed in",
-    todo: ["Update internet facing servers first", "Pull and rebuild container images, then replace running containers", "Restart php-fpm or Apache after a package update", "Take servers you cannot fix off the internet", "Watch for PHP processes starting sh or curl", "Cloudflare WAF rules help as a stopgap, not as a fix"],
+    todo: ["Update internet facing servers first", "Pull pinned image tags, rebuild, replace running containers, then check php -v inside", "Restart php-fpm or Apache after a package update", "Take servers you cannot fix off the internet", "Watch for PHP processes starting sh or curl", "Cloudflare WAF rules help as a stopgap, not as a fix"],
     k2: "What happened", t3: "What happened",
     tl: [["Oct 20", "A Hacker News post leaked two embargoed vulnerabilities"], ["Oct 20", "PHP posted a notice and moved the release a day earlier"], ["Oct 21", "14:00 UTC, 8.5.12, 8.4.27, 8.3.36 and 8.2.35 released"], ["Scope", "Every PHP serving web requests. PHP-FPM, mod_php, php-cgi, FrankenPHP, LiteSpeed"]],
     q: "Wiz researchers said frontier AI models substantially lowered the barrier that kept a decades old flaw from becoming a working exploit, per Help Net Security.",
