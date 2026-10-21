@@ -52,7 +52,7 @@
 
   var ST = {
     fixed: { level: 0, ja: "修正済み", en: "Fixed" },
-    pull: { level: 1, ja: "取り直しが必要", en: "Pull and rebuild" },
+    pull: { level: 1, ja: "イメージの更新を確認", en: "Check the image" },
     vendor: { level: 2, ja: "ディストリの対応を確認", en: "Check your vendor" },
     unknownpatch: { level: 2, ja: "パッチ番号を確認", en: "Check the exact version" },
     vulnerable: { level: 3, ja: "要アップデート", en: "Update now" },
@@ -232,7 +232,8 @@
       case "pull":
         if (f.imageKind === "app") { L.push(ja ? "このイメージは中の PHP " + j.branch + " を公式イメージから引き継ぎます。修正版の PHP で作り直されたものを pull してコンテナを入れ替え、中で php -v を実行して " + j.target + " 以上か確かめてください。" : "This image inherits PHP " + j.branch + " from its base. Pull the rebuilt image, replace the containers, and run php -v inside to confirm " + j.target + " or newer."); break; }
         if (f.sapi === "ci") { L.push(ja ? "CI は実行のたびに最新の " + j.branch + " を入れることが多いので、ログの php -v が " + j.target + " 以上か見てください。" : "CI usually installs the latest " + j.branch + " on each run. Check that php -v in the log shows " + j.target + " or newer."); break; }
-        L.push(ja ? "このタグは修正版 " + j.target + " に更新されました。ただし手元のイメージと動いているコンテナは古いままなので、pull して再ビルドし、コンテナを入れ替えてください。Docker Hub への反映に時間がかかることもあるので、最後に中で php -v を確かめると確実です。" : "This tag has moved to the fixed " + j.target + ". Your cached image and running containers are still old, so pull, rebuild and replace the containers, then run php -v inside to confirm. Docker Hub can take a while to catch up.");
+        var pin = r.fix ? String(r.fix).split(/\s+/).pop() : "";
+        L.push(ja ? "公式イメージの定義は修正版 " + j.target + " に更新されましたが、Docker Hub への配信は順次です。pull した後、コンテナの中で php -v を実行して " + j.target + " 以上か確かめてください。まだ古ければ配信を待つ必要があります。" + (pin ? pin + " のように" : "") + "版まで固定したタグにすると、配信前は pull が失敗し、配信後は必ず修正版が入るので確実です。" : "The official image definition moved to the fixed " + j.target + ", but Docker Hub is rolling the builds out gradually. After pulling, run php -v inside the container and make sure it shows " + j.target + " or newer. If it is still old, wait for the push. Pinning the exact tag" + (pin ? ", " + pin + "," : "") + " makes this safe: it fails to pull until the fixed build is out, and always gets the fixed build after that.");
         break;
       case "vendor":
         L.push(ja ? "ディストリのパッケージです（" + f.v.distro + "）。ディストリには事前にパッチが渡っているので、OS の更新を確認して入れ、" + (f.sapi === "modphp" ? "Apache" : f.sapi === "fpm" ? "php-fpm" : "Web サーバー") + " を再起動してください。番号の見方はディストリのセキュリティ情報で確認できます。" : "This is a distribution package (" + f.v.distro + "). Vendors received the patches in advance, so install the OS update, restart " + (f.sapi === "modphp" ? "Apache" : f.sapi === "fpm" ? "php-fpm" : "the web server") + ", and confirm the fixed package version in your vendor's security tracker.");
