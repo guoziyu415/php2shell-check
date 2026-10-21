@@ -20,7 +20,7 @@ It only reads the text you paste. It never connects to your servers or anywhere 
 | CI and composer | `php-version: '8.1'`, `"php": "^8.1"` |
 | Plain server lists | `web02 PHP 7.2.34 apache mod_php` |
 
-For each PHP it finds, it says whether it is fixed, needs its image checked after a pull, needs a vendor check, needs an update, or is end of life, how PHP runs there (mod_php, PHP-FPM, php-cgi, FrankenPHP, LiteSpeed, CLI), and what to move to.
+For each PHP it finds, it says whether it is fixed, needs a pull and rebuild, needs a vendor check, needs an update, or is end of life, how PHP runs there (mod_php, PHP-FPM, php-cgi, FrankenPHP, LiteSpeed, CLI), and what to move to.
 
 ## The facts it uses
 
@@ -31,7 +31,7 @@ From the PHP security advisory of 21 October 2026:
 - 8.1 and older get no release. The PHP team published minimal source backports for 7.4, 8.0 and 8.1. Distributions and LTS vendors received the patches in advance.
 - Updating is the only complete fix.
 
-Official Docker images: `docker-library/php` moved its 8.2 to 8.5 definitions to the fixed versions, but Docker Hub rolls the builds out gradually. After pulling, run `php -v` inside the container and confirm the fixed version. Pinning exact tags such as `php:8.3.36-apache` is the safe choice: the pull fails until the fixed build is published.
+Official Docker images: the 8.2 to 8.5 tags on Docker Hub point to the fixed versions, published on 2026-10-21 between 16:47 and 17:31 UTC for amd64, arm64 and most other platforms. Floating tags like `php:8.3-apache` are fine after you pull, rebuild and replace your containers. Run `php -v` inside a container to confirm, and pin exact tags such as `php:8.3.36-apache` if you want the version to be explicit.
 
 ## Command line
 
