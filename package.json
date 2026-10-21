@@ -1,0 +1,15 @@
+{
+  "name": "php2shell-check",
+  "version": "1.0.0",
+  "description": "Paste a Dockerfile, docker-compose, php -v, phpinfo or a package list and see whether your PHP needs the October 2026 fix for CVE-2026-109618 and CVE-2026-109619 (PHP2Shell). Reads text only, connects nowhere.",
+  "main": "php2shell-check.js",
+  "bin": { "php2shell-check": "cli.js" },
+  "files": ["php2shell-check.js", "cli.js"],
+  "scripts": { "test": "node test/test.js" },
+  "keywords": ["php", "security", "cve-2026-109618", "cve-2026-109619", "php2shell", "docker", "vulnerability"],
+  "homepage": "https://code415.dev/demos/2026-10-22/php2shell-check",
+  "repository": { "type": "git", "url": "https://github.com/guoziyu415/php2shell-check.git" },
+  "author": "Ziyu Guo",
+  "license": "MIT",
+  "engines": { "node": ">=14" }
+}
